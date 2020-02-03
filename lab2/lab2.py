@@ -1,31 +1,30 @@
-''' ---------------- '''
-''' Karamel Quitayen '''
-''' COMP.3500 IoT    '''
-''' Lab 2            '''
-''' ---------------- '''
+# ---------------- #
+# Karamel Quitayen #
+# COMP.3500 IoT    #
+# Lab 2            #
+# ---------------- #
 
-''' libraries necessary to access pins '''
+# libraries necessary to access pins
 import RPi.GPIO as GPIO
 import time
 
-''' LED and button pin numbers '''
+# LED and button pin numbers
 LED = 23
 BUTTON = 18
 
-''' flags to keep track of button/LED state '''
-ledFlag = 0
+# flags to keep track of button/LED state
 buttonFlag = 0
 
-''' setup board '''
+# setup board
 GPIO.setmode(GPIO.BCM)
 
-''' set LED as output '''
+# set LED as output
 GPIO.setup(LED, GPIO.OUT)
 
-''' set BUTTON as input '''
+# set BUTTON as input
 GPIO.setup(BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-''' endless loop '''
+# endless loop
 while True:
 
     # check button state
