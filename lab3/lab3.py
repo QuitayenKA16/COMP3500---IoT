@@ -20,7 +20,7 @@ ledState = GPIO.LOW
 prevState = "off"
 
 # raspberry pi ip address
-broker_address = "192.168.4.19"
+broker_address = "192.168.0.19"
 
 
 # --------- SET UP RASPBERRY PI CIRCUIT ---------- #
@@ -41,17 +41,16 @@ def on_message(client, userdata, message):
     # print incoming message
     print(str(message.topic) + " " + str(message.payload))
     
-    if (str(message.topic) == "/button"):
-        # --- TOGGLE LOGIC FROM ASSIGNMENT 2 --- #
-        currState = str(message.payload)
-        if (currState == "on" and prevState == "off"):
-            if (ledState == GPIO.LOW):
-                ledState = GPIO.HIGH
-            else:
-                ledState = GPIO.LOW
+    # --- TOGGLE LOGIC FROM ASSIGNMENT 2 --- #
+    currState = str(message.payload)
+    if (currState == "on" and prevState == "off"):
+        if (ledState == GPIO.LOW):
+            ledState = GPIO.HIGH
+        else:
+            ledState = GPIO.LOW
           
-        GPIO.output(LED, ledState)
-        prevState = currState
+    GPIO.output(LED, ledState)
+    prevState = currState
         
     
 
@@ -67,7 +66,7 @@ client.connect(broker_address)
 client.on_message = on_message
 
 # subscribe to topic
-client.subscribe("/test")
+client.subscribe("/button")
 
 # start client
 client.loop_start()

@@ -9,8 +9,8 @@
 
 // WiFi/MQTT parameters
 #define WLAN_SSID       "NameOfNetwork"
-#define WLAN_PASS       "Hedgehog"
-#define BROKER_IP       "192.168.4.19"
+#define WLAN_PASS       "applepie"
+#define BROKER_IP       "192.168.0.19"
 
 //constants to set pin numbers
 #define LED 5
@@ -31,17 +31,15 @@ void callback (char* topic, byte* payload, unsigned int length) {
 
   // add null terminator to byte payload to treat as string
   payload[length] = '\0';
-
-  if (strcmp(topic, "/button") == 0){
-    // TOGGLE LOGIC FROM ASSIGNMENT 2
-    char* currState = (char *) payload;
+  
+  // TOGGLE LOGIC FROM ASSIGNMENT 2
+  char* currState = (char *) payload;
     
-    if (strcmp(currState, "on") == 0 && strcmp(prevState, "off") == 0)
-      ledState = (ledState == HIGH ? LOW : HIGH);
+  if (strcmp(currState, "on") == 0 && strcmp(prevState, "off") == 0)
+    ledState = (ledState == HIGH ? LOW : HIGH);
 
-    digitalWrite(LED, ledState);
-    prevState = currState;
-  }
+  digitalWrite(LED, ledState);
+  prevState = currState;
 }
 
 void setup() {
@@ -102,7 +100,7 @@ void connect() {
   while(!mqttclient.connected()) {
     if (mqttclient.connect(WiFi.macAddress().c_str())) {
       Serial.println(F("MQTT server Connected!"));
-      mqttclient.subscribe("/test"); // subscribe to topic
+      mqttclient.subscribe("/button"); // subscribe to topic
     }
     
     else {

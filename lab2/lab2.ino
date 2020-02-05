@@ -18,6 +18,8 @@ void setup() {
   
   //setup LED pin for output
   pinMode(LED, OUTPUT);
+
+  Serial.begin(115200);
 }
 
 void loop() {
@@ -26,6 +28,7 @@ void loop() {
 
   // if button toggled 
   if (currState == HIGH && prevState == LOW){
+    Serial.println("button press");
     if (light == HIGH)  //if LED was off
       light = LOW;      //turn it on
     else                //if LED was on

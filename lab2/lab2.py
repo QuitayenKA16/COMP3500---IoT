@@ -13,7 +13,8 @@ LED = 23
 BUTTON = 18
 
 # flags to keep track of button/LED state
-buttonFlag = 0
+light = GPIO.LOW
+prevState = GPIO.LOW
 
 # setup board
 GPIO.setmode(GPIO.BCM)
@@ -27,27 +28,18 @@ GPIO.setup(BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # endless loop
 while True:
 
-    # check button state
-    buttonClicked = GPIO.input(BUTTON)
-
-    # wait for button to be clicked
-    while (buttonClicked != 1):
-        # check to see if button was clicked
-        buttonClicked = GPIO.input(BUTTON)
-
-        #if button clicked and LED is off
-        if (buttonClicked == 1 and buttonFlag == 0):
-            # turn on LED
-            GPIO.output(LED, GPIO.HIGH)
-            # update flag
-            buttonFlag = 1
-
-        #if button clicked and LED is on
-        elif (buttonClicked == 1 and buttonFlag == 1):
-            # turn off LED
-            GPIO.output(LED, GPIO.LOW)
-            # update flag
-            buttonFlag = 0
-
-        while (buttonClicked == 1):
-            buttonClicked = GPIO.input(BUTTON)
+    # read button state
+    currState = GPIO.input(BUTTON)
+    
+    # if button toggled
+    if (currState == GPIO.HIGH and prevState == GPIO.LOW):
+        if (ledState == GPIO.LOW):
+            ledState = GPIO.HIGH
+        else:
+            ledState = GPIO.LOW
+          
+    # set button state (on or off) based on above logic
+    GPIO.output(LED, ledState)
+    
+    # update previous state
+    prevState = currState
