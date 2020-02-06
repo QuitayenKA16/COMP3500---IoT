@@ -8,8 +8,8 @@
 #include <PubSubClient.h>
 
 // WiFi/MQTT parameters
-#define WLAN_SSID       "NameOfNetwork"
-#define WLAN_PASS       "applepie"
+#define WLAN_SSID       "NETGEAR87"
+#define WLAN_PASS       "I1t9t7r5litjf?"
 #define BROKER_IP       "192.168.0.19"
 
 //constants to set pin numbers
@@ -22,24 +22,23 @@ PubSubClient mqttclient(client);
 
 // flags to keep track of LED/Button states
 int ledState = HIGH;
-char* prevState = "off";
+int prevState = LOW;
 
 void callback (char* topic, byte* payload, unsigned int length) {
-  Serial.println(topic);
-  Serial.write(payload, length); //print incoming messages
-  Serial.println("");
-
   // add null terminator to byte payload to treat as string
   payload[length] = '\0';
-  
-  // TOGGLE LOGIC FROM ASSIGNMENT 2
-  char* currState = (char *) payload;
-    
-  if (strcmp(currState, "on") == 0 && strcmp(prevState, "off") == 0)
-    ledState = (ledState == HIGH ? LOW : HIGH);
 
-  digitalWrite(LED, ledState);
-  prevState = currState;
+  // received message from pi to turn LED on
+  if (strcmp((char *)payload, "on") == 0){
+    Serial.println("PI -> ARDUINO : on");
+    digitalWrite(LED, HIGH);
+  }
+
+  // received message from pi to turn LED off
+  else if (strcmp((char *)payload, "off") == 0){
+    Serial.println("PI -> ARDUINO : off");
+    digitalWrite(LED, LOW);
+  }
 }
 
 void setup() {
@@ -77,14 +76,24 @@ void loop() {
 
   // run client
   mqttclient.loop();
-  
-  // read current button state
-  if (digitalRead(BUTTON) == HIGH)
-    // tell Pi button was toggled on
-    mqttclient.publish("/button", "on", false);
-  else
-    // tell Pi button was toggled off
-    mqttclient.publish("/button", "off", false);
+
+  // TOGGLE LOGIC FROM ASSIGNMENT 2
+  int currState = digitalRead(BUTTON);
+  if (currState == HIGH && prevState == LOW){
+    if (ledState == LOW){
+      ledState = HIGH;
+      Serial.println("ARDUINO -> PI : on");
+      // send message to pi to turn its LED on
+      mqttclient.publish("/piLED", "on", false);
+    }
+    else {
+      ledState = LOW;
+      Serial.println("ARDUINO -> PI : off");
+      // send message to pi to turn its LED off
+      mqttclient.publish("/piLED", "off", false);
+    }
+  }
+  prevState = currState;
 }
 
 
@@ -100,7 +109,7 @@ void connect() {
   while(!mqttclient.connected()) {
     if (mqttclient.connect(WiFi.macAddress().c_str())) {
       Serial.println(F("MQTT server Connected!"));
-      mqttclient.subscribe("/button"); // subscribe to topic
+      mqttclient.subscribe("/arduinoLED"); // subscribe to topic
     }
     
     else {
