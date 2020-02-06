@@ -17,7 +17,7 @@ BUTTON = 18
 
 # flags to keep track of button/LED state
 ledState = GPIO.LOW
-prevState = "off"
+prevState = GPIO.LOW
 
 # raspberry pi ip address
 broker_address = "192.168.0.19"
@@ -38,21 +38,16 @@ GPIO.setup(BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # -------- FUNCTION TO READ ARDUINO MESSAGE ------ #
 
 def on_message(client, userdata, message):
-    # print incoming message
-    print(str(message.topic) + " " + str(message.payload))
-    
-    # --- TOGGLE LOGIC FROM ASSIGNMENT 2 --- #
-    currState = str(message.payload)
-    if (currState == "on" and prevState == "off"):
-        if (ledState == GPIO.LOW):
-            ledState = GPIO.HIGH
-        else:
-            ledState = GPIO.LOW
-          
-    GPIO.output(LED, ledState)
-    prevState = currState
+    # received message from arduino to turn led on
+    if ("on" in message.payload.decode('ascii')):
+        print("ARDUINO -> PI : on")
+        GPIO.output(LED, GPIO.HIGH)
+
+    # received message from arduino to turn led off
+    else:
+        print("ARDUINO -> PI : off")
+        GPIO.output(LED, GPIO.LOW)
         
-    
 
 # ------------- SET UP MQTT CLIENT --------------- #
 
@@ -66,7 +61,7 @@ client.connect(broker_address)
 client.on_message = on_message
 
 # subscribe to topic
-client.subscribe("/button")
+client.subscribe("/piLED")
 
 # start client
 client.loop_start()
@@ -76,17 +71,25 @@ client.loop_start()
 
 try:
     while True: # wait for ctrl-c
-    
-        # read current button state
-        if (GPIO.input(BUTTON) == HIGH):
-            # send message that button was toggled on
-            client.publish("/button", "on")
-        else:
-            # send message that button was toggled off
-            client.publisH("/button", "off")
-        
-        pass
-        
+
+        # --- TOGGLE LOGIC FROM ASSIGNMENT 2 --- #
+        currState = GPIO.input(BUTTON)
+
+        if (currState == GPIO.HIGH and prevState == GPIO.LOW):
+            if (ledState == GPIO.LOW):
+                ledState = GPIO.HIGH
+                print("PI -> ARDUINO : on")
+                # send message to arduino that button was toggled off
+                client.publish("/arduinoLED", "on")
+            else:
+                ledState = GPIO.LOW
+                print("PI -> ARDUINO : off")
+                # send message to arduino that button was toggled off
+                client.publish("/arduinoLED", "off")
+                
+        prevState = currState
+            
+                
 except KeyboardInterrupt:
     pass
     

@@ -13,7 +13,7 @@ LED = 23
 BUTTON = 18
 
 # flags to keep track of button/LED state
-light = GPIO.LOW
+ledState = GPIO.LOW
 prevState = GPIO.LOW
 
 # setup board
