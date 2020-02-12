@@ -24,7 +24,7 @@ int lightstate;
 
 void setup() {
   Serial.begin(115200);
-  
+
   // connect to wifi
   WiFi.mode(WIFI_STA);
   WiFi.begin(WLAN_SSID, WLAN_PASS);
@@ -40,7 +40,6 @@ void setup() {
 
   // connect to mqtt server
   mqttclient.setServer(BROKER_IP, 1883);
-  connect();
 }
 
 void loop() {
@@ -51,11 +50,11 @@ void loop() {
 
   // run client
   mqttclient.loop();
-
+  
   // vars to keep track of time
   static const unsigned long REFRESH_INTERVAL = 1000; //ms
   static unsigned long lastRefreshTime = 0;
-
+  
   // if elapsed update time more than time interval
   if (millis() - lastRefreshTime >= REFRESH_INTERVAL){
 
@@ -66,8 +65,10 @@ void loop() {
     lightstate = analogRead(SENSOR);
     
     // publish to pi light sensor value
-    mqttclient.publish("/sensor", (char *)lightstate, false);
-  }
+    mqttclient.publish("/sensor", String(lightstate).c_str(), false);
+    Serial.print("ARDUINO -> PI : ");
+    Serial.println(String(lightstate).c_str());
+  } 
 }
 
 // connect to mqtt
@@ -82,6 +83,7 @@ void connect() {
   while(!mqttclient.connected()) {
     if (mqttclient.connect(WiFi.macAddress().c_str())) {
       Serial.println(F("MQTT server Connected!"));
+      mqttclient.subscribe("/sensor"); // subscribe to topic
     }
     
     else {
