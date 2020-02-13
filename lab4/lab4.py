@@ -31,19 +31,18 @@ GPIO.setup(LED, GPIO.OUT)
 # -------- FUNCTION TO READ ARDUINO MESSAGE ------ #
 
 def on_message(client, userdata, message):
-    val = message.payload.decode('ascii')
-    print(val):
-    
+    valStr = message.payload.decode('ascii')
+    receiveTime = datetime.datetime.utcnow()
+    #print("ARDUINO -> PI : " + valStr)
+
     # create json to insert into db
-    json_body = [
-        {
-            "measurement": 'light',
-            "time": datetime.datetime.utcnow(),
-            "fields": {
-                "value": ord(val)
-            }
+    json_body = [{
+        "measurement": 'light',
+        "time": receiveTime,
+        "fields": {
+            "value": float(valStr)
         }
-    ]
+    }]
     
     # write to db
     dbclient.write_points(json_body)
@@ -79,15 +78,17 @@ try:
         # get value inside result
         try:
             mean = list(result.get_points(measurement='light'))[0]['mean']
+            print(mean)
+            
+            # if mean < 200, turn led on
+            if (mean < 200):
+                GPIO.output(LED, GPIO.HIGH)
+                # else turn led off
+            else:
+                GPIO.output(LED, GPIO.LOW)
+
         except:
             pass
-            
-        # if mean < 200, turn led on
-        if (mean < 200):
-            GPIO.output(LED, GPIO.HIGH)
-        # else turn led off
-        else:
-            GPIO.output(LED, GPIO.LOW)
         
 
 except KeyboardInterrupt:
