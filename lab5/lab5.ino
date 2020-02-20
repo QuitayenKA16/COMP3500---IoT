@@ -14,7 +14,7 @@
 
 //constant for analog sensor and led
 #define SENSOR A0
-#define LED 5
+#define LED D0
 
 // wifi client and mqtt client
 WiFiClient client;
@@ -27,7 +27,6 @@ int lightstate;
 void callback (char* topic, byte* payload, unsigned int length) {
   // add null terminator to byte payload to treat as string
   payload[length] = '\0';
-
   // received message from pi to turn LED on
   if (strcmp((char *)payload, "on") == 0){
     Serial.println("PI -> ARDUINO : on");
@@ -59,6 +58,7 @@ void setup() {
 
   // connect to mqtt server
   mqttclient.setServer(BROKER_IP, 1883);
+  mqttclient.setCallback(callback);
 
   // setup led pin as output
   pinMode(LED, OUTPUT);
@@ -88,8 +88,8 @@ void loop() {
     
     // publish to pi light sensor value
     mqttclient.publish("/sensor", String(lightstate).c_str(), false);
-    Serial.print("ARDUINO -> PI : ");
-    Serial.println(String(lightstate).c_str());
+    //Serial.print("ARDUINO -> PI : ");
+    //Serial.println(String(lightstate).c_str());
   } 
 }
 
