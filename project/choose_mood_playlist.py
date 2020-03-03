@@ -8,9 +8,8 @@ SPOTIPY_CLIENT_SECRET = 'c17453d8d3f44a5ca70011e6b686ad43'
 emotions = ['Happy', 'Angry', 'Sad']
 
 if __name__ == '__main__':
-    if len(sys.argv) > 2:
+    if len(sys.argv) > 1:
         username = sys.argv[1]
-        current_emotion = emotions[int(sys.argv[2])]
     else:
         print("Usage: %s username emotion" % (sys.argv[0],))
         sys.exit()
@@ -42,23 +41,35 @@ if __name__ == '__main__':
             print(json.dumps(ep, indent=2))
         print("-------------------------------------------------------------------------------------------------")
 
-        print("Devices:")
-        devices = sp.devices()
-        print(json.dumps(devices, indent=2))
-        current_device_id = devices['devices'][0]['id']
-        print("-------------------------------------------------------------------------------------------------")
+        while True:
+            print("Devices:")
+            devices = sp.devices()
+            print(json.dumps(devices, indent=2))
+            print("-------------------------------------------------------------------------------------------------")
 
-        print("Select playlist: %s" % current_emotion)
-        current_playlist_id = ""
-        for playlist in emotion_playlists:
-            if (playlist['name'] == current_emotion):
-                current_playlist_id = playlist['id']
-        print(current_playlist_id)
+            if (len(devices['devices']) == 0):
+                print("No active devices.")
+            else:
+                device_index = -1
+                if (len(devices['devices']) != 1):
+                    device_index = input("Select device index: ")
+                else:
+                    device_index = 0
+                print("0: Happy\n1: Angry\n2: Sad")
+                emotion_index = input("Select: ")
+                current_emotion = emotions[int(emotion_index)]
+                print("Select playlist: %s" % current_emotion)
+                current_playlist_id = ""
+                for playlist in emotion_playlists:
+                    if (playlist['name'] == current_emotion):
+                        current_playlist_id = playlist['id']
+                print(current_playlist_id)
 
-        print("-------------------------------------------------------------------------------------------------")
-        print("Change playback...")
-        context_uri = "spotify:playlist:" + current_playlist_id
-        sp.start_playback(device_id=current_device_id, context_uri=context_uri)
+                print("-------------------------------------------------------------------------------------------------")
+                print("Change playback...")
+                context_uri = "spotify:playlist:" + current_playlist_id
+                current_device_id = devices['devices'][int(device_index)]['id']
+                sp.start_playback(device_id=current_device_id, context_uri=context_uri)
                     
     else:
         print("Can't get token for ", username)
