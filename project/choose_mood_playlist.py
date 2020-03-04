@@ -5,7 +5,7 @@ import spotipy.util as util
 
 SPOTIPY_CLIENT_ID = '7ed27438f9ed4372b1bb49c1a7e7fa60'
 SPOTIPY_CLIENT_SECRET = 'c17453d8d3f44a5ca70011e6b686ad43'
-emotions = ['Happy', 'Angry', 'Sad']
+emotions = ['Happiness', 'Angry', 'Sadness']
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
@@ -58,7 +58,7 @@ if __name__ == '__main__':
                 else:
                     device_index = 0
                     
-                print("0: Happy\n1: Angry\n2: Sad")
+                print("0: Happiness\n1: Angry\n2: Sadness")
                 emotion_index = input("Select: ")
                 current_emotion = emotions[int(emotion_index)]
                 print("Select playlist: %s" % current_emotion)

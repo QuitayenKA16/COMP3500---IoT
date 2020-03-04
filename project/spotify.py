@@ -33,7 +33,7 @@ class MySpotify:
         user_playlists = self.sp.user_playlists(self.sp.me()['id'])
         self.mood_playlists = []
         for playlist in user_playlists['items']:
-            if any(playlist['name'] == e for e in ['Happy', 'Angry', 'Sad']):
+            if any(playlist['name'] == e for e in ['Happiness', 'Angry', 'Sadness']):
                 playlist_details = dict((k, playlist[k]) for k in ('name', 'id', 'type'))
                 self.mood_playlists.append(playlist_details)
         return self.mood_playlists
