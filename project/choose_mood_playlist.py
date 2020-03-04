@@ -11,7 +11,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         username = sys.argv[1]
     else:
-        print("Usage: %s username emotion" % (sys.argv[0],))
+        print("Usage: %s username" % (sys.argv[0],))
         sys.exit()
 
     scope = 'user-read-currently-playing user-read-playback-state user-modify-playback-state'
@@ -49,12 +49,15 @@ if __name__ == '__main__':
 
             if (len(devices['devices']) == 0):
                 print("No active devices.")
+                while (len(devices['devices']) == 0):
+                    devices = sp.devices()
             else:
                 device_index = -1
                 if (len(devices['devices']) != 1):
                     device_index = input("Select device index: ")
                 else:
                     device_index = 0
+                    
                 print("0: Happy\n1: Angry\n2: Sad")
                 emotion_index = input("Select: ")
                 current_emotion = emotions[int(emotion_index)]
@@ -68,8 +71,10 @@ if __name__ == '__main__':
                 print("-------------------------------------------------------------------------------------------------")
                 print("Change playback...")
                 context_uri = "spotify:playlist:" + current_playlist_id
-                current_device_id = devices['devices'][int(device_index)]['id']
-                sp.start_playback(device_id=current_device_id, context_uri=context_uri)
+                current_device_id = sp.devices()['devices'][int(device_index)]['id']
+                if (current_device_id != None):
+                    sp.shuffle(state=1, device_id=current_device_id)
+                    sp.start_playback(device_id=current_device_id, context_uri=context_uri)
                     
     else:
         print("Can't get token for ", username)
