@@ -1,2 +1,9 @@
 client id: 7ed27438f9ed4372b1bb49c1a7e7fa60
 client secret: c17453d8d3f44a5ca70011e6b686ad43
+
+azure
+device id: raspberrypi
+primary key: KVy6+nH75dLNzCJ6/9aPVzJuuXdJreMwSveeme3Bp/Y=
+secondary key: dEJKFmaq2FPopnVqgBXPiXOiMC174KYywIM7Bx+r/J4=
+primary connection string: HostName=Raspberry-Pi-Spotify-Emotion-Recognition.azure-devices.net;DeviceId=raspberrypi;SharedAccessKey=KVy6+nH75dLNzCJ6/9aPVzJuuXdJreMwSveeme3Bp/Y=
+secondary connection string: HostName=Raspberry-Pi-Spotify-Emotion-Recognition.azure-devices.net;DeviceId=raspberrypi;SharedAccessKey=dEJKFmaq2FPopnVqgBXPiXOiMC174KYywIM7Bx+r/J4=
