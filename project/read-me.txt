@@ -1,10 +1,16 @@
+--SPOTIFY----------------------------------------------------------------------------
 client id: 7ed27438f9ed4372b1bb49c1a7e7fa60
 client secret: c17453d8d3f44a5ca70011e6b686ad43
 redirect uri: http://example.com/callback/
 
-azure
+--AZURE (IOT HUB)----------------------------------------------------------------------
 device id: raspberrypi
 primary key: KVy6+nH75dLNzCJ6/9aPVzJuuXdJreMwSveeme3Bp/Y=
 secondary key: dEJKFmaq2FPopnVqgBXPiXOiMC174KYywIM7Bx+r/J4=
 primary connection string: HostName=Raspberry-Pi-Spotify-Emotion-Recognition.azure-devices.net;DeviceId=raspberrypi;SharedAccessKey=KVy6+nH75dLNzCJ6/9aPVzJuuXdJreMwSveeme3Bp/Y=
 secondary connection string: HostName=Raspberry-Pi-Spotify-Emotion-Recognition.azure-devices.net;DeviceId=raspberrypi;SharedAccessKey=dEJKFmaq2FPopnVqgBXPiXOiMC174KYywIM7Bx+r/J4=
+
+--AZURE (COMPUTER VISION)--------------------------------------------------------------------
+end point: https://comp3500-iot-azure-computer-vision.cognitiveservices.azure.com/
+computer vision subscription key 1: 04cd658500e04aa4aa239fc5c96637ed
+computer vision subscription key 2: e8293dbfa6044ae7be16bd4619f6d8f2
