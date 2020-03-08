@@ -1,6 +1,7 @@
 import requests
-import matplotlib.pyplot as plt
+import matplotlib
 import json
+import os
 from PIL import Image
 from io import BytesIO
 
@@ -32,12 +33,14 @@ response.raise_for_status()
 # The 'analysis' object contains various fields that describe the image. The most
 # relevant caption for the image is obtained from the 'description' property.
 analysis = response.json()
-print(json.dumps(response.json()))
+print(json.dumps(response.json(), indent=2))
 image_caption = analysis["description"]["captions"][0]["text"].capitalize()
 
+'''
 # Display the image and overlay it with the caption.
 image = Image.open(BytesIO(requests.get(image_url).content))
-plt.imshow(image)
-plt.axis("off")
-_ = plt.title(image_caption, size="x-large", y=-0.1)
-plt.show()
+matplotlib.pyplot.plt.imshow(image)
+matplotlib.pyplot.plt.axis("off")
+_ = matplotlib.pyplot.plt.title(image_caption, size="x-large", y=-0.1)
+matplotlib.pyplot.plt.show()
+'''
