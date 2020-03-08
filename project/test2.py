@@ -1,9 +1,9 @@
 import requests, json
 
-subscription_key = '04cd658500e04aa4aa239fc5c96637ed'
+subscription_key = '11291157eba34c9c847b603363bc8def'
 assert subscription_key
 
-face_api_url = 'https://comp3500-iot-azure-computer-vision.cognitiveservices.azure.com/face/v1.0/detect'
+face_api_url = 'hhttps://comp3500-azure-face-api.cognitiveservices.azure.com/face/v1.0/detect'
 
 image_url = 'https://upload.wikimedia.org/wikipedia/commons/3/37/Dagestani_man_and_woman.jpg'
 

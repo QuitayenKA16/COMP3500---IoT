@@ -14,3 +14,7 @@ secondary connection string: HostName=Raspberry-Pi-Spotify-Emotion-Recognition.a
 end point: https://comp3500-iot-azure-computer-vision.cognitiveservices.azure.com/
 computer vision subscription key 1: 04cd658500e04aa4aa239fc5c96637ed
 computer vision subscription key 2: e8293dbfa6044ae7be16bd4619f6d8f2
+
+--AZURE (FACE API)--------------------------------------------------------------------
+end point: https://comp3500-azure-face-api.cognitiveservices.azure.com/
+key1: 11291157eba34c9c847b603363bc8def
