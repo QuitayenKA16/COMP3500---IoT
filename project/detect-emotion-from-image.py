@@ -1,14 +1,8 @@
 import os, sys
 import requests, json
-from PIL import Image
-import matplotlib.pyplot as plt
-from matplotlib import patches
-from io import BytesIO
 
 subscription_key = '11291157eba34c9c847b603363bc8def'
 face_api_url = 'https://comp3500-azure-face-api.cognitiveservices.azure.com/face/v1.0/detect'
-
-emotions = ['anger', 'contempt', 'digust', 'fear', 'happiness', 'neutral', 'sadness', 'surprise']
 
 if __name__ == '__main__':
 
@@ -32,6 +26,6 @@ if __name__ == '__main__':
 
     response = requests.post(face_api_url, params=params, headers=headers, data=image_data)
     print(json.dumps(response.json(), indent=2))
-    file = open("data.txt", "w")
+    file = open("data.json", "w")
     file.write(response.text)
     file.close()
