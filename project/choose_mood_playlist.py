@@ -71,12 +71,13 @@ if __name__ == '__main__':
                 print(current_playlist_id)
 
                 print("-------------------------------------------------------------------------------------------------")
-                print("Change playback...")
-                context_uri = "spotify:playlist:" + current_playlist_id
-                current_device_id = sp.devices()['devices'][int(device_index)]['id']
-                if (current_device_id != None):
-                    sp.shuffle(state=1, device_id=current_device_id)
-                    sp.start_playback(device_id=current_device_id, context_uri=context_uri)
+                if (sp.devices()['devices'][int(device_index)]['is_active'] == True):
+                    print("Change playback...")
+                    context_uri = "spotify:playlist:" + current_playlist_id
+                    current_device_id = sp.devices()['devices'][int(device_index)]['id']
+                    if (current_device_id != None):
+                        sp.shuffle(state=1, device_id=current_device_id)
+                        sp.start_playback(device_id=current_device_id, context_uri=context_uri)
                     
     else:
         print("Can't get token for ", username)

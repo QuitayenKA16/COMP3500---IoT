@@ -25,7 +25,7 @@ if __name__ == '__main__':
     }
 
     response = requests.post(face_api_url, params=params, headers=headers, data=image_data)
-    print(json.dumps(response.json(), indent=2))
+    #print(json.dumps(response.json(), indent=2))
     file = open("data.json", "w")
     file.write(response.text)
     file.close()

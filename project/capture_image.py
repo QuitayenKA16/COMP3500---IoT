@@ -12,4 +12,5 @@ camera.close()
 
 im = Image.open('image.jpeg')
 im_flip = ImageOps.mirror(im)
+im_flip = ImageOps.flip(im_flip)
 im_flip.save('image.jpeg')
