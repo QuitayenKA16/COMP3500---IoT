@@ -6,7 +6,7 @@ from influxdb import InfluxDBClient
 # Spotipy variables required to authorization
 SPOTIPY_CLIENT_ID = '7ed27438f9ed4372b1bb49c1a7e7fa60'
 SPOTIPY_CLIENT_SECRET = 'c17453d8d3f44a5ca70011e6b686ad43'
-SPOTIPY_REDIRECT_URI = 'https://example.com/callback'
+SPOTIPY_REDIRECT_URI = 'https://example.com/callback/'
 
 # Required console input: username
 if len(sys.argv) > 1:
@@ -78,8 +78,8 @@ if token:
 
         # Get playlist ID associated with captured emotion (with highest value) for corresponding user
         current_playlist_id = list(result.get_points(measurement='uri', tags={'user':username}))[0][highEmotion]
-        playlist = sp.playlist(current_playlist_id)
-        playlist = dict((k, playlist) for k in ('id', 'name', 'type'))
+        playlist_obj = sp.playlist(current_playlist_id)
+        playlist = {"id" : playlist_obj['id'], "name": playlist_obj['name'], "image" : playlist_obj['images'][0]}
         print(json.dumps(playlist, indent=2))
         print("-------------------------------------------------------------------------------------------------")
 
