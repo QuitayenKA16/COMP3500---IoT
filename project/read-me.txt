@@ -3,6 +3,12 @@ client id: 7ed27438f9ed4372b1bb49c1a7e7fa60
 client secret: c17453d8d3f44a5ca70011e6b686ad43
 redirect uri: http://example.com/callback/
 
+angry playlist uri: 7L08IETH8EQmm7k4r8rivb
+fear playlist uri: 1IQD1FC4LQa2fa59HytPGV
+happy playlist uri: 6M4ZbVjkSE6P3IhbeYbnhc
+sad playlist uri: 0N2pTjZX98Piir6i1VUTzZ
+neutral playlist: 37i9dQZF1DXc8kgYqQLMfH
+
 --AZURE (IOT HUB)----------------------------------------------------------------------
 device id: raspberrypi
 primary key: KVy6+nH75dLNzCJ6/9aPVzJuuXdJreMwSveeme3Bp/Y=
