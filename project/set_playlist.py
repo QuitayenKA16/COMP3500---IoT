@@ -78,6 +78,14 @@ if token:
 
         # Get playlist ID associated with captured emotion (with highest value) for corresponding user
         current_playlist_id = list(result.get_points(measurement='uri', tags={'user':username}))[0][highEmotion]
+        playlist = sp.playlist(current_playlist_id)
+        print(playlist['name'])
+        file = open("playlist-data.json", "w")
+        file.write(json.dumps(playlist))
+        file.close()
+        #print(json.dumps(dict((k, playlist) for k in ('name', 'id', 'type')), indent=2))
+        print("-------------------------------------------------------------------------------------------------")
+
 
         # Change selected device playback to specified playlist ID
         if (sp.devices()['devices'][int(device_index)]['is_active'] == True):
