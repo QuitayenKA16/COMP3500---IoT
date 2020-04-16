@@ -5,7 +5,7 @@ import spotipy.util as util
 
 SPOTIPY_CLIENT_ID = '7ed27438f9ed4372b1bb49c1a7e7fa60'
 SPOTIPY_CLIENT_SECRET = 'c17453d8d3f44a5ca70011e6b686ad43'
-SPOTIPY_REDIRECT_URI = 'https://example.com/callback'
+SPOTIPY_REDIRECT_URI = 'https://example.com/callback/'
 
 emotions = ['Happiness', 'angry', 'Sadness']
 
