@@ -10,8 +10,8 @@ with open('data.json') as f:
     data = json.load(f)
 
 # Print json data
-print(json.dumps(data, indent=2))
-print()
+#print(json.dumps(data, indent=2))
+#print()
 
 # Open and store data into Image variable
 image_path = os.path.join(sys.argv[1])
@@ -19,7 +19,7 @@ image_read = open(image_path, "rb").read()
 image = Image.open(BytesIO(image_read))
 
 # Create Matplot pyplot
-plt.figure(figsize=(8,8))
+plt.figure(figsize=(19,10))
 ax = plt.imshow(image, alpha=1)
 
 # For each face found in camera image capture
@@ -38,7 +38,7 @@ for f in data:
     yVal = origin[1];
     for e in emotions:
         # Output each emotion value next to face
-        plt.text(origin[0]+fr['width']+5, yVal, "%s: %s" % (e, emotions[e]), fontsize=10, color='y', va="top")
+        plt.text(origin[0]+fr['width']+5, yVal, "%s: %s" % (e, emotions[e]), fontsize=18, color='y', va="top")
         yVal += 40
 
         # Calculate most apparent emotion detected
@@ -47,8 +47,9 @@ for f in data:
             highEmotion = e
 
     # Output emotion detected
-    plt.text(origin[0], origin[1], "%s" % (highEmotion),fontsize=12, color='b', va="bottom")
+    plt.text(origin[0], origin[1], "%s" % (highEmotion),fontsize=18, color='b', va="bottom")
 
     
 _ = plt.axis("off")
-plt.show()
+plt.savefig("analyze_image.jpeg")
+#plt.show()

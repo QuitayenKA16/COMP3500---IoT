@@ -83,7 +83,7 @@ if token:
         print(json.dumps(playlist, indent=2))
         print("-------------------------------------------------------------------------------------------------")
 
-
+        
         # Change selected device playback to specified playlist ID
         if (sp.devices()['devices'][int(device_index)]['is_active'] == True):
             print("Change playback...")
