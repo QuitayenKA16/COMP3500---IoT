@@ -28,6 +28,7 @@ class MainApp(tk.Frame):
         self.master.title("COMP3500 - Final Project")
         self.sp = None
         self.username = None
+        self.first = True
         self.prev_emotion = "no"
         self.pack(fill="both", expand=1)
         self.init_widgets()
@@ -130,14 +131,17 @@ class MainApp(tk.Frame):
 
     def capture_image(self):
         os.system("python3 capture_image.py")
-        #os.system("python3 detect-emotion-from-image.py image.jpeg")
+        os.system("python3 detect-emotion-from-image.py image.jpeg")
         os.system("python3 output-emotion-results.py image.jpeg")
 
         with open('data.json') as f:
             data = json.load(f)
             
         self.face_data_text.config(state="normal")
-        self.face_data-text.delete('1.0', tk.END)
+        if (self.first is True):
+            self.first = False
+        else:
+            self.face_data_text.delete('1.0', tk.END)
         self.face_data_text.insert(tk.END, json.dumps(data,indent=2))
         self.face_data_text.config(state="disabled")
         self.view_btn.config(state="normal")
