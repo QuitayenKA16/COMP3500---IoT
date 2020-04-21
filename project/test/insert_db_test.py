@@ -5,7 +5,7 @@ dbclient = InfluxDBClient('0.0.0.0', 8086, 'root', 'root', 'mydb')
 json_body = [{
     "measurement": 'uri',
     "tags": {
-        "user": "QuitayenKA16"
+        "user": "default"
         },
     "fields" : {
         "anger" : "7L08IETH8EQmm7k4r8rivb",
