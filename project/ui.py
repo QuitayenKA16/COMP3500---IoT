@@ -102,6 +102,11 @@ class MainApp(tk.Frame):
             self.console_text = tkscrolled.ScrolledText(self, wrap="none")
             self.console_text.place(x=425,y=470,height=160,width=500)
             self.console_text.config(state="disabled")
+
+            self.try_again_btn = tk.Button(self, text="CHANGE PLAYBACK", command=lambda:self.change_playback())
+            self.try_again_btn.place(x=770,y=440)
+            self.try_again_btn.config(state="disabled")
+            
         
     def reset(self):
         devices = self.sp.devices()
@@ -184,41 +189,48 @@ class MainApp(tk.Frame):
                     highVal = emotion_values[e]
                     highEmotion = e
             
-            # Get playlist ID associated with captured emotion (with highest value) for corresponding user
+            # Get playlist ID associated with captured emotion for corresponding user
             current_playlist_id = self.get_playlist_id_from_textbox(highEmotion)
             playlist_name = (self.sp.playlist(current_playlist_id)['name']).encode('ascii', 'ignore')
             self.console_text.config(state="normal")
             self.console_text.insert(tk.END, "Emotion detected: %s\n" % (highEmotion))
             self.console_text.insert(tk.END, "Playlist selected: %s\n" % (playlist_name))
-
+            
             if (highEmotion != self.prev_emotion):
-                # Change selected device playback to specified playlist ID
-                if (len(self.sp.devices()['devices']) > 0):
-                    context_uri = "spotify:playlist:" + current_playlist_id
-                    current_device_id = self.sp.devices()['devices'][0]['id']
-                    if (self.sp.devices()['devices'][0]['is_active'] == False):
-                        self.console_text.insert(tk.END, "Current device is not active.\n")
-                    else:
-                        self.console_text.insert(tk.END, "Changing playback...\n")
-                        self.sp.shuffle(state=True, device_id=current_device_id)
-                        self.sp.start_playback(device_id=current_device_id, context_uri=context_uri)
-                        self.prev_emotion = highEmotion
-                    
-                else:
-                    self.console_text.insert(tk.END, "You currently have no available devices for playback.\n")
-
+                self.prev_emotion = highEmotion
+                self.change_playback()
             else:
                 self.console_text.insert(tk.END, "Playlist already playing. No action...\n")
-                
-            self.console_text.config(state="disabled")
 
+            self.console_text.config(state="disabled")
+                
         else:
             self.face_data_text.config(state="normal")
             self.face_data_text.insert(tk.END, "Face not found.\n")
             self.face_data_text.config(state="disabled")
 
             
-                
+    def change_playback(self):
+        self.console_text.config(state="normal")
+        current_playlist_id = self.get_playlist_id_from_textbox(self.prev_emotion)
+        # Change selected device playback to specified playlist ID
+        if (len(self.sp.devices()['devices']) > 0):
+            context_uri = "spotify:playlist:" + current_playlist_id
+            current_device_id = self.sp.devices()['devices'][0]['id']
+            if (self.sp.devices()['devices'][0]['is_active'] == False):
+                self.console_text.insert(tk.END, "Current device is not active.\n")
+                self.try_again_btn.config(state="normal")
+            else:
+                self.console_text.insert(tk.END, "Changing playback...\n")
+                self.sp.shuffle(state=True, device_id=current_device_id)
+                self.sp.start_playback(device_id=current_device_id, context_uri=context_uri)
+                self.try_again_btn.config(state="disabled")
+                    
+        else:
+            self.console_text.insert(tk.END, "You currently have no available devices for playback.\n")
+            self.try_again_btn.config(state="normal")
+        
+   
 if __name__ == "__main__":
     root = tk.Tk()
     app = MainApp(master=root)
