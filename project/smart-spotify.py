@@ -77,12 +77,15 @@ class MainApp(tk.Frame):
             self.update_playlists_btn.place(x=319, y=335)
             self.emotion_labels = ["anger", "contempt", "disgust", "fear", "happiness", "neutral", "sadness", "surprise"]
             self.playlist_entries = []
+            self.playlist_btn = []
             i = 0;
             
             for e in self.emotion_labels:
-                tk.Label(self, text=e).place(x=20,y=370+(i*35))
-                self.playlist_entries.append(tk.Entry(self, width=37))
-                self.playlist_entries[i].place(x=100, y=370+(i*35))
+                tk.Label(self, text=e).place(x=20,y=375+(i*35))
+                self.playlist_entries.append(tk.Entry(self, width=26))
+                self.playlist_entries[i].place(x=100, y=375+(i*35))
+                self.playlist_btn.append(tk.Button(self, text="SEARCH", command=lambda x=i:self.search_playlist(x)))
+                self.playlist_btn[i].place(x=320,y=370+(i*35))
                 i += 1
             self.update_playlist_textboxes(self.username)
 
@@ -92,11 +95,11 @@ class MainApp(tk.Frame):
             self.face_data_text.config(state="disabled")
 
             self.view_btn = tk.Button(self, text="VIEW RECENT", command=lambda:self.view_image())
-            self.view_btn.place(x=680,y=30)
+            self.view_btn.place(x=683,y=30)
             self.view_btn.configure(state="disabled")
             
             self.picture_btn = tk.Button(self, text="TAKE PICTURE", command=lambda:self.capture_image())
-            self.picture_btn.place(x=800,y=30)
+            self.picture_btn.place(x=803,y=30)
 
             tk.Label(self, text="CONSOLE", font=self.bold_font).place(x=425,y=450)
             self.console_text = tkscrolled.ScrolledText(self, wrap="none")
@@ -106,7 +109,13 @@ class MainApp(tk.Frame):
             self.try_again_btn = tk.Button(self, text="CHANGE PLAYBACK", command=lambda:self.change_playback())
             self.try_again_btn.place(x=770,y=440)
             self.try_again_btn.config(state="disabled")
-            
+
+    def search_playlist(self, index):
+        emotion = self.emotion_labels[index]
+        result = SearchApp(parent=self, sp=self.sp, emotion=emotion, curr_playlist=self.get_playlist_id_from_textbox(emotion)).show()
+        if (len(self.playlist_entries[index].get()) != 0):
+            self.playlist_entries[index].delete(0, "end")
+        self.playlist_entries[index].insert(0, result)
         
     def reset(self):
         devices = self.sp.devices()
@@ -191,7 +200,7 @@ class MainApp(tk.Frame):
             
             # Get playlist ID associated with captured emotion for corresponding user
             current_playlist_id = self.get_playlist_id_from_textbox(highEmotion)
-            playlist_name = (self.sp.playlist(current_playlist_id)['name']).encode('ascii', 'ignore')
+            playlist_name = (self.sp.playlist(current_playlist_id)['name']).encode('ascii', 'ignore').decode()
             self.console_text.config(state="normal")
             self.console_text.insert(tk.END, "Emotion detected: %s\n" % (highEmotion))
             self.console_text.insert(tk.END, "Playlist selected: %s\n" % (playlist_name))
@@ -229,7 +238,106 @@ class MainApp(tk.Frame):
         else:
             self.console_text.insert(tk.END, "You currently have no available devices for playback.\n")
             self.try_again_btn.config(state="normal")
+
+
+class SearchApp(tk.Toplevel):
+    def __init__(self, parent, sp=None, emotion=None, curr_playlist=None):
+        tk.Toplevel.__init__(self, parent)
+        self.geometry("380x340+150+275")
+        self.title("Search Playlist")
+        self.return_var = tk.StringVar()
+        self.sp = sp
+        self.emotion = emotion
+        self.playlist_id = curr_playlist
+        self.bold_font = tkfont.Font(family="Arial", size=10, weight="bold")
+        self.init_widgets()
+
+    def init_widgets(self):
+        tk.Label(self, text="Emotion:").place(x=0,y=5)
+        self.emotion_entry = tk.Entry(self)
+        self.emotion_entry.place(x=110,y=5)
+        self.emotion_entry.insert(0, self.emotion)
+        self.emotion_entry.config(state="disabled")
+
+        tk.Label(self, text="Current playlist:").place(x=0,y=35)
+        self.playlist_entry = tk.Entry(self, textvariable=self.return_var)
+        self.playlist_entry.place(x=110,y=35)
+        self.playlist_entry.insert(0, self.playlist_id)
+        self.set_btn = tk.Button(self, text="SET", command=lambda:self.set(), width=7)
+        self.set_btn.place(x=290,y=30)
         
+        tk.Label(self, text="Search Spotify:").place(x=0,y=65)
+        self.search_entry = tk.Entry(self)
+        self.search_entry.place(x=110, y=65)
+        self.submit_btn = tk.Button(self, text="SEARCH", command=lambda:self.search(), width=7)
+        self.submit_btn.place(x=290,y=60)
+        
+        tk.Label(self, text="SEARCH RESULTS:").place(x=0,y=106)
+        self.tkvar = tk.StringVar(self)
+        self.tkvar.set("")
+        self.options = [""]
+        self.option_menu = tk.OptionMenu(self, self.tkvar, *self.options)
+        self.option_menu.place(x=129, y=100, width=150)
+        self.option_menu.config(state="disabled")
+        self.tkvar.trace('w', self.option_select)
+
+        tk.Label(self, text="Playlist Info:").place(x=0, y=150)
+        self.playlist_text = tkscrolled.ScrolledText(self, wrap="none")
+        self.playlist_text.place(x=0,y=170,height=160,width=370)
+        self.playlist_text.config(state="disabled")
+        
+        self.playlist_entry.bind("<Return>", lambda:self.set())
+        
+    def search(self):
+        #check length
+        self.select_btn = tk.Button(self, text="SELECT", command=lambda:self.select_playlist(), width=7)
+        self.select_btn.place(x=290,y=100)
+        
+        search = self.search_entry.get()
+        self.search_results = self.sp.search(q=search, type="playlist", limit=10)['playlists']['items']
+
+        self.options = []
+        for s in self.search_results:
+            self.options.append(s['name'].encode('ascii', errors='ignore').decode())
+        self.option_menu.config(state="normal")
+        menu = self.option_menu["menu"]
+        menu.delete(0, "end")
+        for string in self.options:
+            menu.add_command(label=string, command=lambda value=string: self.tkvar.set(value))
+            
+    def set(self):
+        self.destroy()
+        
+    def show(self):
+        self.wm_deiconify()
+        self.focus_force()
+        self.wait_window()
+        return self.return_var.get()
+            
+    def select_playlist(self):
+        selected_id = self.playlist_json['id']
+        if (len(self.playlist_entry.get()) != 0):
+            self.playlist_entry.delete(0, "end")
+        self.playlist_entry.insert(0, selected_id)
+
+    def option_select(self, *args):
+        self.playlist_json = self.get_playlist_json_from_option_menu(self.tkvar.get())
+        json_obj = {}
+        json_obj['id']= self.playlist_json['id']
+        json_obj['name']= self.playlist_json['name']
+        json_obj['tracks'] = {'total':self.playlist_json['tracks']['total']}
+        json_obj['owner'] = dict((k, self.playlist_json['owner'][k]) for k in ('display_name', 'id'))
+        
+        self.playlist_text.config(state="normal")
+        if (len(self.playlist_text.get("1.0", "end-1c")) != 0):
+            self.playlist_text.delete('1.0', tk.END)
+        self.playlist_text.insert(tk.END, json.dumps(json_obj,indent=2))
+        self.playlist_text.config(state="disabled")
+
+    def get_playlist_json_from_option_menu(self, value):
+        for s in self.search_results:
+            if (s['name'].encode('ascii', errors='ignore').decode() == value):
+                return s
    
 if __name__ == "__main__":
     root = tk.Tk()
