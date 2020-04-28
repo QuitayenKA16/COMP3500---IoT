@@ -40,7 +40,6 @@ class MainApp(tk.Frame):
     def init_widgets(self):
         tk.Label(self, text="Enter username:").place(x=0,y=5)
         self.username_entry = tk.Entry(self)
-        self.username_entry.insert(0, "QuitayenKA16")
         self.username_entry.place(x=115, y=5)
         self.username_submit = tk.Button(self, text="SUBMIT", command=lambda:self.process_login())
         self.username_submit.place(x=290,y=0)
