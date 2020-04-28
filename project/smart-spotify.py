@@ -1,11 +1,13 @@
 import tkinter as tk
 import tkinter.scrolledtext as tkscrolled
 import tkinter.font as tkfont
-import os, json
+import os, json, time
 import spotipy
 import matplotlib.pyplot as plt
 from matplotlib import patches
-from PIL import Image
+import picamera
+from picamera.array import PiRGBArray
+from PIL import Image, ImageOps
 from io import BytesIO
 
 from influxdb import InfluxDBClient
@@ -25,11 +27,12 @@ class MainApp(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        self.master.geometry("950x665+200+250")
-        self.master.title("COMP3500 - Final Project")
+        self.master.geometry("950x665+600+50")
+        self.master.title("COMP3500 - Smart Spotify Controller")
         self.sp = None
         self.username = None
         self.prev_emotion = "no"
+        self.start = False
         self.bold_font = tkfont.Font(family="Arial", size=11, weight="bold")
         self.pack(fill="both", expand=1)
         self.init_widgets()
@@ -95,11 +98,15 @@ class MainApp(tk.Frame):
             self.face_data_text.config(state="disabled")
 
             self.view_btn = tk.Button(self, text="VIEW RECENT", command=lambda:self.view_image())
-            self.view_btn.place(x=683,y=30)
+            self.view_btn.place(x=807,y=30)
             self.view_btn.configure(state="disabled")
             
-            self.picture_btn = tk.Button(self, text="TAKE PICTURE", command=lambda:self.capture_image())
-            self.picture_btn.place(x=803,y=30)
+            self.start_btn = tk.Button(self, text="START", command=lambda:self.start_camera())
+            self.start_btn.place(x=425,y=0)
+            
+            self.stop_btn = tk.Button(self, text="STOP", command=lambda:self.stop_camera())
+            self.stop_btn.place(x=500,y=0)
+            self.stop_btn.configure(state="disabled")
 
             tk.Label(self, text="CONSOLE", font=self.bold_font).place(x=425,y=450)
             self.console_text = tkscrolled.ScrolledText(self, wrap="none")
@@ -170,24 +177,32 @@ class MainApp(tk.Frame):
         result = dbclient.query('select * from "uri"')
         return list(result.get_points(measurement='uri', tags={'user':user}))[0][emotion]
 
-    def capture_image(self):
-        self.view_btn.config(state="disabled")
+    def start_camera(self):
+        self.start = True
+        self.start_btn.config(state="disabled")
+        self.stop_btn.config(state="normal")
+
+    def stop_camera(self):
+        self.start = False
+        self.stop_btn.config(state="disabled")
+        self.start_btn.config(state="normal")
         
-        os.system("python3 capture_image.py")
+    def analyze_image(self):
+        self.view_btn.config(state="disabled")
+    
         os.system("python3 detect-emotion-from-image.py image.jpeg")
         os.system("python3 output-emotion-results.py image.jpeg")
 
         with open('data.json') as f:
             data = json.load(f)
 
-        if (len(data) > 1):
-            self.face_data_text.config(state="normal")
-            if (len(self.face_data_text.get("1.0", "end-1c")) != 0):
-                self.face_data_text.delete('1.0', tk.END)
-            self.face_data_text.insert(tk.END, json.dumps(data[0],indent=2))
-            self.face_data_text.config(state="disabled")
-            self.view_btn.config(state="normal")
+        self.face_data_text.config(state="normal")
+        if (len(self.face_data_text.get("1.0", "end-1c")) != 0):
+            self.face_data_text.delete('1.0', tk.END)
 
+        if (len(data) > 1):
+            self.face_data_text.insert(tk.END, json.dumps(data[0],indent=2))
+            self.view_btn.config(state="normal")
             emotion_values = data[0]['faceAttributes']['emotion']
 
             # Get emotion with greatest value
@@ -212,11 +227,10 @@ class MainApp(tk.Frame):
                 self.console_text.insert(tk.END, "Playlist already playing. No action...\n")
 
             self.console_text.config(state="disabled")
-                
+            
         else:
-            self.face_data_text.config(state="normal")
             self.face_data_text.insert(tk.END, "Face not found.\n")
-            self.face_data_text.config(state="disabled")
+        self.face_data_text.config(state="disabled")
 
             
     def change_playback(self):
@@ -338,8 +352,24 @@ class SearchApp(tk.Toplevel):
         for s in self.search_results:
             if (s['name'].encode('ascii', errors='ignore').decode() == value):
                 return s
-   
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = MainApp(master=root)
-    app.mainloop()
+
+            
+root = tk.Tk()
+app = MainApp(master=root)
+camera = picamera.PiCamera()
+camera.start_preview(fullscreen=False, window=(0,0,500,500))
+
+def outside_loop():
+    if app.start is True:
+        camera.capture('image.jpeg')
+        im = Image.open('image.jpeg')
+        im_flip = ImageOps.mirror(im)
+        im_flip = ImageOps.flip(im_flip)
+        im_flip.save('image.jpeg')
+        app.analyze_image()
+        
+    app.after(1000*10, outside_loop)
+
+app.after(1000*10, outside_loop)
+app.mainloop()
+camera.close()

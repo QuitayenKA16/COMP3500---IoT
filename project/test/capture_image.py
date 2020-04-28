@@ -8,11 +8,9 @@ camera = picamera.PiCamera()
 
 # Show camera preview
 camera.start_preview(fullscreen=False, window=(0,0,500,500))
-time.sleep(2)
 
 # Take picture and save as image.jpeg
 camera.capture('image.jpeg')
-camera.stop_preview()
 camera.close()
 im = Image.open('image.jpeg')
 
