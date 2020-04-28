@@ -3,7 +3,6 @@ import tkinter.scrolledtext as tkscrolled
 import tkinter.font as tkfont
 import os, json, time
 import spotipy
-import matplotlib.pyplot as plt
 from matplotlib import patches
 import picamera
 from picamera.array import PiRGBArray
@@ -27,11 +26,10 @@ class MainApp(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        self.master.geometry("950x665+600+50")
+        self.master.geometry("950x665+15+125")
         self.master.title("COMP3500 - Smart Spotify Controller")
         self.sp = None
         self.username = None
-        self.prev_emotion = "no"
         self.start = False
         self.bold_font = tkfont.Font(family="Arial", size=11, weight="bold")
         self.pack(fill="both", expand=1)
@@ -96,8 +94,8 @@ class MainApp(tk.Frame):
             self.face_data_text.place(x=425,y=60,height=370,width=500)
             self.face_data_text.config(state="disabled")
 
-            self.view_btn = tk.Button(self, text="VIEW RECENT", command=lambda:self.view_image())
-            self.view_btn.place(x=807,y=30)
+            self.view_btn = tk.Button(self, text="IMAGE PREVIEW", command=lambda:self.view_image())
+            self.view_btn.place(x=792,y=30)
             self.view_btn.configure(state="disabled")
             
             self.start_btn = tk.Button(self, text="START", command=lambda:self.start_camera())
@@ -106,6 +104,9 @@ class MainApp(tk.Frame):
             self.stop_btn = tk.Button(self, text="STOP", command=lambda:self.stop_camera())
             self.stop_btn.place(x=500,y=0)
             self.stop_btn.configure(state="disabled")
+
+            self.single_btn = tk.Button(self, text="SINGLE CAPTURE", command=lambda:self.single_pic())
+            self.single_btn.place(x=565,y=0)
 
             tk.Label(self, text="CONSOLE", font=self.bold_font).place(x=425,y=450)
             self.console_text = tkscrolled.ScrolledText(self, wrap="none")
@@ -129,14 +130,6 @@ class MainApp(tk.Frame):
         self.devices_text.delete('1.0', tk.END)
         self.devices_text.insert(tk.END, json.dumps(devices,indent=2))
         self.devices_text.config(state="disabled")
-            
-    def view_image(self):
-        image_read = open("analyze_image.jpeg", "rb").read()
-        image = Image.open(BytesIO(image_read))
-        plt.figure(figsize=(8,5))
-        ax = plt.imshow(image, alpha=1)
-        _ = plt.axis("off")
-        plt.show()
  
     def update_playlist_db(self):
         dbclient = InfluxDBClient('0.0.0.0', 8086, 'root', 'root', 'mydb')
@@ -158,6 +151,9 @@ class MainApp(tk.Frame):
             }
         }]
         dbclient.write_points(json_body)
+        self.console_text.config(state="normal")
+        self.console_text.insert(tk.END, "Playlist choices updated.\n")
+        self.console_text.config(state="disabled")
         self.update_playlist_textboxes(self.username)
 
     def update_playlist_textboxes(self, user):
@@ -176,15 +172,31 @@ class MainApp(tk.Frame):
         result = dbclient.query('select * from "uri"')
         return list(result.get_points(measurement='uri', tags={'user':user}))[0][emotion]
 
+    def view_image(self):
+        image = Image.open("analyze_image.jpeg")
+        image.show()
+    
     def start_camera(self):
         self.start = True
         self.start_btn.config(state="disabled")
         self.stop_btn.config(state="normal")
+        self.single_btn.config(state="disabled")
 
     def stop_camera(self):
         self.start = False
         self.stop_btn.config(state="disabled")
         self.start_btn.config(state="normal")
+        self.single_btn.config(state="normal")
+
+    def single_pic(self):
+        camera = picamera.PiCamera()
+        camera.capture('image.jpeg')
+        im = Image.open('image.jpeg')
+        im_flip = ImageOps.mirror(im)
+        im_flip = ImageOps.flip(im_flip)
+        im_flip.save('image.jpeg')
+        camera.close()
+        self.analyze_image()
         
     def analyze_image(self):
         self.view_btn.config(state="disabled")
@@ -198,9 +210,9 @@ class MainApp(tk.Frame):
         self.face_data_text.config(state="normal")
         if (len(self.face_data_text.get("1.0", "end-1c")) != 0):
             self.face_data_text.delete('1.0', tk.END)
-
-        if (len(data) > 1):
-            self.face_data_text.insert(tk.END, json.dumps(data[0],indent=2))
+        self.face_data_text.insert(tk.END, json.dumps(data[0],indent=2))
+        
+        if (len(data) > 0):
             self.view_btn.config(state="normal")
             emotion_values = data[0]['faceAttributes']['emotion']
 
@@ -213,31 +225,32 @@ class MainApp(tk.Frame):
                     highEmotion = e
             
             # Get playlist ID associated with captured emotion for corresponding user
-            current_playlist_id = self.get_playlist_id_from_textbox(highEmotion)
-            playlist_name = (self.sp.playlist(current_playlist_id)['name']).encode('ascii', 'ignore').decode()
+            playlist_id = self.get_playlist_id_from_textbox(highEmotion)
+            playlist_name = (self.sp.playlist(playlist_id)['name']).encode('ascii', 'ignore').decode()
             self.console_text.config(state="normal")
             self.console_text.insert(tk.END, "Emotion detected: %s\n" % (highEmotion))
-            self.console_text.insert(tk.END, "Playlist selected: %s\n" % (playlist_name))
-            
-            if (highEmotion != self.prev_emotion):
-                self.prev_emotion = highEmotion
-                self.change_playback()
+
+            current_playback = self.sp.current_playback()['context']['uri'].split(":")[2]
+            if (current_playback != playlist_id):
+                self.console_text.insert(tk.END, "Playlist selected: %s\n" % (playlist_name))
+                self.change_playback(playlist_id)
             else:
                 self.console_text.insert(tk.END, "Playlist already playing. No action...\n")
 
             self.console_text.config(state="disabled")
             
         else:
-            self.face_data_text.insert(tk.END, "Face not found.\n")
+            self.console_text.config(state="normal")
+            self.console_text.insert(tk.END, "Face not detected.\n")
+            self.console_text.config(state="disabled")
         self.face_data_text.config(state="disabled")
 
             
-    def change_playback(self):
+    def change_playback(self, playlist_id):
         self.console_text.config(state="normal")
-        current_playlist_id = self.get_playlist_id_from_textbox(self.prev_emotion)
         # Change selected device playback to specified playlist ID
         if (len(self.sp.devices()['devices']) > 0):
-            context_uri = "spotify:playlist:" + current_playlist_id
+            context_uri = "spotify:playlist:" + playlist_id
             current_device_id = self.sp.devices()['devices'][0]['id']
             if (self.sp.devices()['devices'][0]['is_active'] == False):
                 self.console_text.insert(tk.END, "Current device is not active.\n")
@@ -355,20 +368,19 @@ class SearchApp(tk.Toplevel):
             
 root = tk.Tk()
 app = MainApp(master=root)
-camera = picamera.PiCamera()
-camera.start_preview(fullscreen=False, window=(0,0,500,500))
 
-def outside_loop():
+def camera_loop():
     if app.start is True:
+        camera = picamera.PiCamera()
+        camera.start_preview(fullscreen=False, window=(5,880,200,200))
         camera.capture('image.jpeg')
+        camera.close()
         im = Image.open('image.jpeg')
         im_flip = ImageOps.mirror(im)
         im_flip = ImageOps.flip(im_flip)
         im_flip.save('image.jpeg')
         app.analyze_image()
-        
-    app.after(1000*10, outside_loop)
+    app.after(1000*3, camera_loop)
 
-app.after(1000*10, outside_loop)
+app.after(1000*3, camera_loop)
 app.mainloop()
-camera.close()
