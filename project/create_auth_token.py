@@ -18,6 +18,6 @@ if __name__ == '__main__':
     token = util.prompt_for_user_token(username, scope, client_id=SPOTIPY_CLIENT_ID, client_secret=SPOTIPY_CLIENT_SECRET, redirect_uri=SPOTIPY_REDIRECT_URI)
 
     if token:
-        print("Successfulyl created token for", username)
+        print("Successfully created token for", username)
     else:
         print("Can't get token for", username)
